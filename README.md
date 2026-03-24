@@ -13,7 +13,7 @@ Aegis-Matrix 并非传统的静态代码审计工具，而是一个部署在 Onc
 ## 3. 快速复现指南 (Windows 环境)
 
 ### 步骤 A: 环境准备
-1. 克隆仓库：`git clone https://github.com/hkai614119-star/aegis-matrix.git`
+1. 克隆仓库：`git clone https://github.com/hkka1/Aegis-Matrix.git`
 2. 进入目录：`cd aegis-matrix`
 3. 安装依赖：`pip install -r requirements.txt`
 4. 复制并配置 `.env` 文件，填入你的 OKX X Layer WSS 节点地址和测试钱包私钥。
