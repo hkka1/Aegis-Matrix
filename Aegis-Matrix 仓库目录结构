@@ -1,0 +1,28 @@
+aegis-matrix/
+├── README.md                      # 核心文档：架构说明、Onchain OS 部署与复现指南
+├── requirements.txt               # Python 依赖清单 (web3.py, asyncio等)
+├── .env.example                   # 环境变量配置模板 (WSS节点, 钱包私钥)
+├── .gitignore                     
+│
+├── 📂 contracts/                  # 智能合约层 (测试靶场)
+│   ├── VulnerableVault.sol        # 模拟带有闪电贷漏洞的目标协议合约
+│   └── AttackerContract.sol       # 模拟黑客攻击的测试脚本合约
+│
+├── 📂 core/                       # 核心免疫系统 (Agent 节点)
+│   ├── __init__.py
+│   ├── mempool_scanner.py         # 内存池 WebSocket 高频监听器
+│   ├── state_simulator.py         # 本地状态 Fork 与 Dry-Run 执行引擎
+│   ├── neuro_analyzer.py          # AI 大模型评估逻辑 (判定是否为致命攻击)
+│   └── frontrunner.py             # 紧急暂停交易构建与高 Gas 抢跑发送器
+│
+├── 📂 config/                     # 配置与静态文件
+│   ├── contract_abis.json         # 目标协议与攻击测试合约的 ABI
+│   └── protocol_registry.json     # 受 Aegis 保护的重点金库合约地址列表
+│
+├── 📂 scripts/                    # 自动化与测试脚本
+│   ├── deploy_mock_env.py         # 在 Onchain OS 测试网一键部署漏洞合约与攻击者合约
+│   ├── simulate_hack.py           # 触发一次黑客攻击，用于演示 Aegis 的自动拦截
+│   └── windows_start_node.bat     # Windows 环境一键启动 Aegis 监听节点的批处理脚本
+│
+└── 📂 logs/                       # 拦截日志与状态输出
+    └── intercept_records.json     # 记录成功抢跑的黑客交易 Hash 与防御 TxHash
