@@ -22,3 +22,41 @@ Aegis-Matrix 并非传统的静态代码审计工具，而是一个部署在 Onc
 打开终端 1，启动 Aegis 防御节点：
 ```bat
 .\scripts\windows_start_node.bat
+### 4. 核心攻防流转图 (Aegis-Matrix Architecture)
+
+```text
++-------------------+       +-----------------------+       +-------------------+
+| 🌑 The Dark Forest|       | 🛡️ Aegis-Matrix Node  |       | ⛓️ OKX Onchain OS |
+|   (Hacker/User)   |       |   (Local AI Engine)   |       |    (X Layer)      |
++-------------------+       +-----------------------+       +-------------------+
+          |                             |                             |
+ 1. Send Malicious Tx                   |                             |
+ [Flash Loan Exploit] ------+           |                             |
+          |                 |           |                             |
+          v                 v           |                             |
+   [ Mempool Pool ] ===> 2. WSS Pending Tx Intercept                  |
+   (Unconfirmed Tx)         |           |                             |
+                            v           |                             |
+                 3. Local State Fork & Dry Run Execution              |
+                            |           |                             |
+                            v           |                             |
+                 4. Neuro-Symbolic AI Heuristic Analysis              |
+                    [Result: CRITICAL_DRAIN DETECTED]                 |
+                            |           |                             |
+                            v           |                             |
+                 5. The Kill Switch (Emergency Pause)                 |
+                            |           |                             |
+                            v           |                             |
+                 6. MEV Gas Bidding (Hacker Gas * 1.55)               |
+                            |           |                             |
+                            +---------------------------------------> |
+                                        |                 7. Block N Minting
+                                        |                 [Order: Highest Gas]
+                                        |                             |
+                                        |    +------------------------+
+                                        |    |
+                                        |    +-> [Tx 1] Aegis Defense (SUCCESS)
+                                        |    |          Protocol Paused
+                                        |    |
+                                        |    +-> [Tx 2] Hacker Attack (REVERTED)
+                                        |               Execution Failed
