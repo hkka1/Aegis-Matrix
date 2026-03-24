@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis-Matrix 实时神盾矩阵</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --panel-bg: #111;
+            --neon-green: #00ff41;
+            --neon-red: #ff003c;
+            --neon-blue: #00e5ff;
+            --border: 1px solid #333;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--neon-green);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        header {
+            text-align: center;
+            padding: 10px;
+            border-bottom: 2px solid var(--neon-blue);
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+        header h1 { margin: 0; font-size: 24px; color: var(--neon-blue); }
+        header p { margin: 5px 0 0 0; font-size: 12px; opacity: 0.7; }
+        
+        .dashboard {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            height: calc(100% - 80px);
+        }
+        .panel {
+            background: var(--panel-bg);
+            border: var(--border);
+            border-radius: 5px;
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.05);
+        }
+        .panel h3 {
+            margin-top: 0;
+            border-bottom: 1px dashed #555;
+            padding-bottom: 10px;
+            color: #fff;
+            text-align: center;
+        }
+        .log-container {
+            flex: 1;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.5;
+            padding-right: 5px;
+        }
+        /* 隐藏滚动条 */
+        .log-container::-webkit-scrollbar { width: 4px; }
+        .log-container::-webkit-scrollbar-thumb { background: #333; }
+
+        .line { margin-bottom: 5px; opacity: 0.9; }
+        .text-blue { color: var(--neon-blue); }
+        .text-red { color: var(--neon-red); text-shadow: 0 0 8px var(--neon-red); font-weight: bold; }
+        .text-green { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
+        .text-yellow { color: #ffeb3b; }
+
+        /* 中间核心状态区 */
+        .center-panel {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        .status-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px solid var(--neon-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 0 30px var(--neon-blue);
+            margin: 20px 0;
+            transition: all 0.3s;
+        }
+        .status-circle.danger {
+            border-color: var(--neon-red);
+            box-shadow: 0 0 50px var(--neon-red);
+            color: var(--neon-red);
+            animation: pulse 1s infinite;
+        }
+        .status-circle.safe {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 30px var(--neon-green);
+            color: var(--neon-green);
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .ai-metrics {
+            width: 100%;
+            margin-top: 20px;
+            font-size: 14px;
+            background: #000;
+            padding: 10px;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🛡️ AEGIS-MATRIX : X LAYER COMMAND CENTER</h1>
+        <p>STATUS: ONLINE | NODE: WSS-RPC-01 | LATENCY: 12ms</p>
+    </header>
+
+    <div class="dashboard">
+        <div class="panel">
+            <h3>📡 MEMPOOL RADAR (Pending Tx)</h3>
+            <div class="log-container" id="mempool-log"></div>
+        </div>
+
+        <div class="panel center-panel">
+            <h3>🧠 NEURO-SYMBOLIC AI ENGINE</h3>
+            <div class="status-circle" id="main-status">SCANNING</div>
+            <div class="ai-metrics" id="ai-metrics">
+                <div class="line">Threat Level: <span class="text-green" id="threat-level">LOW</span></div>
+                <div class="line">Target Contract: <span id="target-contract">N/A</span></div>
+                <div class="line">Confidence: <span id="confidence">N/A</span></div>
+                <div class="line">Action: <span id="ai-action">MONITORING</span></div>
+            </div>
+            <h4 style="color:#555; margin-top:30px;">-- Local Fork Dry-Run Logs --</h4>
+            <div class="log-container" style="width: 100%;" id="dryrun-log"></div>
+        </div>
+
+        <div class="panel">
+            <h3>⚡ MEV EXECUTION & ROUTING</h3>
+            <div class="log-container" id="execution-log"></div>
+        </div>
+    </div>
+
+    <script>
+        // 工具函数：向容器添加日志并自动滚动到底部
+        function addLog(elementId, html, delay = 0) {
+            setTimeout(() => {
+                const el = document.getElementById(elementId);
+                el.innerHTML += `<div class="line">${html}</div>`;
+                el.scrollTop = el.scrollHeight;
+            }, delay);
+        }
+
+        function randomHash() { return '0x' + Math.random().toString(16).substr(2, 40); }
+
+        // 步骤 1：背景产生正常的假交易 (营造监控氛围)
+        let normalTxInterval = setInterval(() => {
+            let hash = randomHash();
+            addLog('mempool-log', `<span class="text-blue">[Tx]</span> ${hash.substr(0,14)}... Gas: 1.2 Gwei -> <span class="text-green">SAFE</span>`);
+        }, 800);
+
+        // 步骤 2：剧本开始 - 黑客发起攻击 (4秒后触发)
+        setTimeout(() => {
+            clearInterval(normalTxInterval); // 停止正常交易，聚焦攻击
+            const hackerTx = randomHash();
+            const vaultAddress = '0xVault_778899...';
+            
+            // 左侧：捕获攻击
+            addLog('mempool-log', `<br><span class="text-red"><b>[ALERT] UNUSUAL CONTRACT INTERACTION DETECTED!</b></span>`);
+            addLog('mempool-log', `<span class="text-yellow">[Target]</span> ${vaultAddress}`);
+            addLog('mempool-log', `<span class="text-yellow">[Payload]</span> executeFlashLoan(1000000_USDT)`);
+            addLog('mempool-log', `<span class="text-yellow">[Hacker Gas]</span> 100 Gwei`);
+
+            // 中间：AI 大脑开始疯狂运转
+            const statusCircle = document.getElementById('main-status');
+            statusCircle.className = 'status-circle danger';
+            statusCircle.innerText = 'ATTACK\nDETECTED';
+            
+            document.getElementById('threat-level').innerHTML = '<span class="text-red">CRITICAL (零日漏洞/闪电贷)</span>';
+            document.getElementById('target-contract').innerText = vaultAddress;
+            document.getElementById('confidence').innerText = '99.8% (TVL will drop to 0)';
+            document.getElementById('ai-action').innerHTML = '<span class="text-red">INITIATING KILL SWITCH</span>';
+
+            addLog('dryrun-log', `> Forking X Layer state at Block 142857...`, 200);
+            addLog('dryrun-log', `> Simulating payload execution...`, 600);
+            addLog('dryrun-log', `> <span class="text-red">FATAL ERROR: Vault Balance -> 0</span>`, 1200);
+            addLog('dryrun-log', `> Generating Emergency Pause Calldata...`, 1500);
+
+            // 右侧：MEV 抢跑执行
+            addLog('execution-log', `<span class="text-yellow">[MEV ROUTER] Bidding War Initiated!</span>`, 1800);
+            addLog('execution-log', `Hacker Gas: 100 Gwei | <span class="text-green">Aegis Gas: 155 Gwei</span>`, 2200);
+            addLog('execution-log', `Building Pause Transaction...`, 2600);
+            addLog('execution-log', `Signing with Protocol Admin Key...`, 3000);
+            addLog('execution-log', `<br><span class="text-green"><b>[BROADCAST SUCCESS]</b></span>`, 3500);
+            addLog('execution-log', `Defense Tx Hash: ${randomHash()}`, 3800);
+            addLog('execution-log', `<span class="text-blue">-> Packed in Block #142858 (Index 0)</span>`, 4200);
+            addLog('execution-log', `<span class="text-red">-> Hacker Tx Reverted (Index 1)</span>`, 4600);
+
+            // 恢复状态
+            setTimeout(() => {
+                statusCircle.className = 'status-circle safe';
+                statusCircle.innerText = 'SECURED';
+                document.getElementById('ai-action').innerHTML = '<span class="text-green">THREAT NEUTRALIZED</span>';
+                addLog('mempool-log', `<br><span class="text-blue">[SYSTEM] Resuming Radar...</span>`);
+                
+                // 恢复正常打点
+                setInterval(() => {
+                    addLog('mempool-log', `<span class="text-blue">[Tx]</span> ${randomHash().substr(0,14)}... Gas: 1.2 Gwei -> <span class="text-green">SAFE</span>`);
+                }, 800);
+            }, 6000);
+
+        }, 4000);
+
+    </script>
+</body>
+</html>
