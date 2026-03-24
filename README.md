@@ -20,6 +20,8 @@ Aegis-Matrix 并非传统的静态代码审计工具，而是一个部署在 Onc
 
 ### 步骤 B: 启动攻防演练靶场
 打开终端 1，启动 Aegis 防御节点：
+💎 商业闭环：Save-to-Earn (救援即收益)
+Aegis-Matrix 不是一个做慈善的公共组件，而是一个具有自驱力的自主经济实体 (AEE)。当拦截成功并挽救协议 TVL 后，Aegis 智能合约将自动提取 1% 的防守资金作为“白帽救援费”。Agent 赚取的利润将用于自动购买更多的 OKX X Layer RPC 节点算力和更高维度的 AI API，实现真正的**“以战养战，自我进化”**。
 ```bat
 .\scripts\windows_start_node.bat
 ### 4. 核心攻防流转图 (Aegis-Matrix Architecture)
