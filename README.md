@@ -27,41 +27,36 @@ Aegis-Matrix 并非传统的静态代码审计工具，而是一个部署在 Onc
 Aegis-Matrix 不是一个做慈善的公共组件，而是一个具有自驱力的自主经济实体 (AEE)。当拦截成功并挽救协议 TVL 后，Aegis 智能合约将自动提取 1% 的防守资金作为“白帽救援费”。Agent 赚取的利润将用于自动购买更多的 OKX X Layer RPC 节点算力和更高维度的 AI API，实现真正的**“以战养战，自我进化”**。
 ```bat
 .\scripts\windows_start_node.bat
+```
+
 ### 4. 核心攻防流转图 (Aegis-Matrix Architecture)
 
-```text
-+-------------------+       +-----------------------+       +-------------------+
-| 🌑 The Dark Forest|       | 🛡️ Aegis-Matrix Node  |       | ⛓️ OKX Onchain OS |
-|   (Hacker/User)   |       |   (Local AI Engine)   |       |    (X Layer)      |
-+-------------------+       +-----------------------+       +-------------------+
-          |                             |                             |
- 1. Send Malicious Tx                   |                             |
- [Flash Loan Exploit] ------+           |                             |
-          |                 |           |                             |
-          v                 v           |                             |
-   [ Mempool Pool ] ===> 2. WSS Pending Tx Intercept                  |
-   (Unconfirmed Tx)         |           |                             |
-                            v           |                             |
-                 3. Local State Fork & Dry Run Execution              |
-                            |           |                             |
-                            v           |                             |
-                 4. Neuro-Symbolic AI Heuristic Analysis              |
-                    [Result: CRITICAL_DRAIN DETECTED]                 |
-                            |           |                             |
-                            v           |                             |
-                 5. The Kill Switch (Emergency Pause)                 |
-                            |           |                             |
-                            v           |                             |
-                 6. MEV Gas Bidding (Hacker Gas * 1.55)               |
-                            |           |                             |
-                            +---------------------------------------> |
-                                        |                 7. Block N Minting
-                                        |                 [Order: Highest Gas]
-                                        |                             |
-                                        |    +------------------------+
-                                        |    |
-                                        |    +-> [Tx 1] Aegis Defense (SUCCESS)
-                                        |    |          Protocol Paused
-                                        |    |
-                                        |    +-> [Tx 2] Hacker Attack (REVERTED)
-                                        |               Execution Failed
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Hacker as 🥷 黑暗森林 (Hacker)
+    participant Mempool as 🌊 X Layer Mempool
+    participant Aegis as 🛡️ Aegis Node (TEE)
+    participant Vault as 🏦 目标金库 (Target)
+    
+    Hacker->>Mempool: 发送闪电贷攻击 Tx (Gas: 100)
+    activate Mempool
+    Mempool-->>Aegis: WSS 捕获 Pending Tx
+    
+    activate Aegis
+    Note right of Aegis: 1. 本地 Fork 链上状态<br/>2. AI 神经引擎模拟执行<br/>3. 判定 TVL 归零风险 (99.9%)
+    Aegis->>Aegis: 触发 The Kill Switch (紧急拦截)
+    Aegis->>Mempool: 广播 Pause() 防御 Tx (Gas: 155 MEV抢跑)
+    deactivate Aegis
+    
+    Note over Mempool: 矿工按最高 Gas Price 排序打包区块
+    
+    Mempool->>Vault: [先执行] Aegis 防御 Tx
+    activate Vault
+    Vault-->>Vault: 状态：✅ 协议已暂停
+    
+    Mempool--xVault: [后执行] Hacker 攻击 Tx
+    Note right of Vault: 状态：❌ 执行失败 (Reverted)
+    deactivate Vault
+    deactivate Mempool
+```
